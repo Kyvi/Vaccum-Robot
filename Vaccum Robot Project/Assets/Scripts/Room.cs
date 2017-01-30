@@ -57,21 +57,4 @@ public class Room {
 		return Mathf.Abs (line - r.line) + Mathf.Abs (column - r.column);
 	}
 
-	///public void move(Room r){
-	///	if(positionX < r.column){
-	/// positionX++;
-	/// } else{
-		/// if(positionX > r.column){
-		/// positionX--;
-		/// }
-		/// else{
-			/// if(positionY < r.line){
-			/// positionY++;
-			/// }
-			///else{
-				/// if(positionX > r.line){
-				/// positionY--;
-				/// }
-	/// 		
-	///}
 }
