@@ -35,6 +35,9 @@ public class EnvironmentController : MonoBehaviour {
 	public GameObject dust;
 	public GameObject jewel;
 
+	public GameObject[] roomDust;
+	public GameObject[] roomJewel;
+
 	/// <summary>
 	/// Some Graphics utilities :
 	/// startXDust : horizontal position of room 0 's Dust
@@ -58,7 +61,10 @@ public class EnvironmentController : MonoBehaviour {
 	public float timeDelay = 0.1f;
 	private WaitForSeconds waitDelay;
 
-	void Start () {
+	void Awake(){
+		roomDust = new GameObject[nbRooms];
+		roomJewel = new GameObject[nbRooms];
+
 		// instantiates the 25 rooms of the environment 
 		rooms = new Room[nbRooms];
 		for (int i = 0; i < nbRooms; i++) {
@@ -71,7 +77,7 @@ public class EnvironmentController : MonoBehaviour {
 		distanceTable = new int[nbRooms] [];
 		for (int i=0; i< nbRooms;i++){
 			distanceTable [i] = new int[nbRooms];
-			}
+		}
 
 		// sets one half of distanceTable by calculating the distance between each rooms
 		for (int i = 0; i < nbRooms; i++) {
@@ -87,7 +93,9 @@ public class EnvironmentController : MonoBehaviour {
 				distanceTable [i] [j] = distanceTable [j] [i];
 			}
 		}
-			
+	}
+
+	void Start () {
 		waitDelay = new WaitForSeconds (timeDelay);
 		StartCoroutine (generate ());
 	}
@@ -100,7 +108,9 @@ public class EnvironmentController : MonoBehaviour {
 		yield return waitDelay;
 		generateDust ();
 		generateJewel ();
+		Debug.Log ((float)score/Time.time);
 		StartCoroutine(generate ());
+
 	}
 		
 
@@ -123,11 +133,12 @@ public class EnvironmentController : MonoBehaviour {
 						Vector3 pos = new Vector3 (); // the position of the dust
 						pos.x = startXDust + i * nextX; // sets the horizontal position of the dust
 						pos.y = startYDust - j * nextY; // sets the vertical position of the dust
-						Instantiate (dust, pos, Quaternion.identity); // instantiate the dust at the given position
+						GameObject g = Instantiate (dust, pos, Quaternion.identity); // instantiate the dust at the given position
+						roomDust[roomNumber] = g;
 						if (roomState == 0) { // change room state to 1 if there was nothing or 3 if there was a jewel
-							roomState = 1;
+							room.state = 1;
 						} else {
-							roomState = 3;
+							room.state = 3;
 						}
 					}
 				}
@@ -154,11 +165,12 @@ public class EnvironmentController : MonoBehaviour {
 						Vector3 pos = new Vector3 (); // the position of the jewel
 						pos.x = startXJewel + i * nextX; // sets the horizontal position of the jewel
 						pos.y = startYJewel - j * nextY; // sets the vertical position of the jewel
-						Instantiate (jewel, pos, Quaternion.identity); // instantiate the jewel at the given position
+						GameObject g = Instantiate (jewel, pos, Quaternion.identity); // instantiate the jewel at the given position
+						roomJewel[roomNumber] = g;
 						if (roomState == 0) { // change room state to 2 if there was nothing or 3 if there was dust
-							roomState = 2;
+							room.state = 2;
 						} else {
-							roomState = 3;
+							room.state = 3;
 						}
 					}
 				}

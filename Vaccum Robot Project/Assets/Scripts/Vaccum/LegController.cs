@@ -14,7 +14,7 @@ public class LegController : VaccumPartsController {
 	/// 0 : Right
 	/// 1 : Down
 	/// 2 : Left
-	/// 3 : Bottom
+	/// 3 : Up
 	/// Changes the vaccum's position and adds score.
 	/// </summary>
 	/// <param name="direction">Direction</param>
@@ -22,21 +22,22 @@ public class LegController : VaccumPartsController {
 		switch (direction) {
 		case 0:
 			vaccumC.position++;
-			vaccumC.lineV++;
+			vaccumC.columnV++;
 			break;
 		case 1:
 			vaccumC.position += 5;
-			vaccumC.columnV++;
+			vaccumC.lineV++;
 			break;
 		case 2:
 			vaccumC.position--;
-			vaccumC.lineV--;
+			vaccumC.columnV--;
 			break;
 		case 3:
 			vaccumC.position -= 5;
-			vaccumC.columnV--;
+			vaccumC.lineV--;
 			break;
 		}
+		vaccumC.transform.position = new Vector3 (vaccumC.startX + vaccumC.columnV * vaccumC.nextX, vaccumC.startY - vaccumC.lineV * vaccumC.nextY, 0);
 		environementC.score += actionScore;
 	}
 }

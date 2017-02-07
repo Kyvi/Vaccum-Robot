@@ -15,12 +15,14 @@ public class ArmController : VaccumPartsController {
 	public void take(){
 		int roomState = environementC.rooms [vaccumC.position].state;
 		if (roomState == 2) {
-			roomState = 0;
+			environementC.rooms [vaccumC.position].state = 0;
 			environementC.score +=  actionScore;
+			Destroy (environementC.roomJewel [vaccumC.position]);
 		}
 		if (roomState == 3) {
-			roomState = 1;
+			environementC.rooms [vaccumC.position].state = 1;
 			environementC.score += actionScore;
+			Destroy (environementC.roomJewel [vaccumC.position]);
 		}
 	}
 }

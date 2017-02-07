@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PipeController : VaccumPartsController {
 
+	public int stealingJewelScore = -20;
 
 	public override void Start(){
 		base.Start ();
@@ -16,12 +17,20 @@ public class PipeController : VaccumPartsController {
 	public void vaccumUp(){
 		int roomState = environementC.rooms [vaccumC.position].state;
 		if (roomState == 1) {
-			roomState = 0;
+			environementC.rooms [vaccumC.position].state = 0;
 			environementC.score += actionScore;
+			Destroy (environementC.roomDust [vaccumC.position]);
+		}
+		if (roomState == 2) {
+			environementC.score -= stealingJewelScore;
+			Destroy (environementC.roomJewel [vaccumC.position]);
 		}
 		if (roomState == 3) {
-			roomState = 2;
+			environementC.rooms [vaccumC.position].state = 0;
 			environementC.score += actionScore;
+			environementC.score -= stealingJewelScore;
+			Destroy (environementC.roomDust [vaccumC.position]);
+			Destroy (environementC.roomJewel [vaccumC.position]);
 		}
 	}
 }

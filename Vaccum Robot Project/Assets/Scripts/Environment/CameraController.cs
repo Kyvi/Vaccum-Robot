@@ -12,10 +12,9 @@ public class CameraController : MonoBehaviour {
 	/// <summary>
 	/// Reference to the actual EnvironmentController.
 	/// </summary>
-	private EnvironmentController environmentC;
+	private Room[] rooms;
 
 	void Start(){
-		environmentC = gameObject.GetComponentInParent<EnvironmentController>();
 	}
 
 	/// <summary>
@@ -23,7 +22,8 @@ public class CameraController : MonoBehaviour {
 	/// </summary>
 	/// <param name="id_room">Room ID</param>
 	public int view(int id_room ){
-		return environmentC.rooms[id_room].state;
+		rooms = gameObject.GetComponent<EnvironmentController>().rooms;
+		return rooms [id_room].state;
 	}
 
 }

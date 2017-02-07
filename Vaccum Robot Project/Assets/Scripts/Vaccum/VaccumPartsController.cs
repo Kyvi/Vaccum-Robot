@@ -22,7 +22,7 @@ public class VaccumPartsController : MonoBehaviour {
 	protected EnvironmentController environementC;
 
 	public virtual void Start (){
-		vaccumC = gameObject.GetComponentInParent<VaccumController>();
+		vaccumC = gameObject.GetComponent<VaccumController>();
 		environementC = vaccumC.environment.GetComponent<EnvironmentController>();
 	}
 }
