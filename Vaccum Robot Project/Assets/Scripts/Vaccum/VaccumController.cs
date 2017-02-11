@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class VaccumController : MonoBehaviour {
 
+	public Graph graph;
+	public int depth = 5;
+
 	/// <summary>
 	/// The position of the vaccum.
 	/// </summary>
@@ -28,6 +31,7 @@ public class VaccumController : MonoBehaviour {
 
 	/// <summary>
 	/// The action plan.
+	/// -1 : Do nothing
 	/// 0 : Go right
 	/// 1 : Go down
 	/// 2 : Go left
@@ -99,7 +103,9 @@ public class VaccumController : MonoBehaviour {
 	private IEnumerator work()
 	{
 		yield return StartCoroutine(loadPerceipts());
-		setRoomScores ();
+		Node root = new Node (-1, position, lineV, columnV,  environmentC.nbRooms, perceipts, 0, null);
+		graph = new Graph (root,depth);
+
 		setActionPlan ();
 		yield return StartCoroutine(executeActionPlan ());
 		StartCoroutine(work());
@@ -110,9 +116,7 @@ public class VaccumController : MonoBehaviour {
 	/// Loads the states of the rooms into the vaccum perceipts.
 	/// </summary>
 	private IEnumerator loadPerceipts(){
-		int nbRooms = environmentC.nbRooms;
-		perceipts = new int[nbRooms] ;
-		for (int i = 0; i < nbRooms; i++){
+		for (int i = 0; i < perceipts.Length; i++){
 			yield return cameraC_ActionWait;
 			perceipts[i]= cameraC.view(i) ;
 		}
@@ -153,58 +157,59 @@ public class VaccumController : MonoBehaviour {
 	/// Sets the action plan.
 	/// </summary>
 	public void setActionPlan(){
-		//TODO (create an arrayList with actions according to exploration trees algorithms)
+		
+		int bestScore = 0;
+		Node currentNode = graph.graphNodes [0];
+		Node goalNode = currentNode;
+		int compteur = 0;
 
-		int roomGoal = 0;
-		int roomGoalScore = roomScores[0];
-		for (int i = 1; i < roomScores.Length; i++) {
-			if (roomScores [i] > roomGoalScore) {
-				roomGoal = i;
-				roomGoalScore = roomScores [i];
+		while (compteur < graph.graphNodes.Count && currentNode.depth <= depth) {
+			currentNode = graph.graphNodes [compteur];
+			int currentNodeScore;
+			//Debug.Log ("ID : " + currentNode.id);
+			int distance = environmentC.distanceTable [position] [currentNode.id];
+			int distanceScore = distance * legC.actionScore;
+			int state = currentNode.states[currentNode.id];
+			int stateScore = 0;
+			int vaccumUpScore = pipeC.actionScore;
+			int takeScore = armC.actionScore;
+			switch (state) {
+			case 0:
+				break;
+			case 1:
+				stateScore = vaccumUpScore;
+				break;
+			case 2:
+				stateScore = takeScore;
+				break;
+			case 3:
+				stateScore = vaccumUpScore+takeScore;
+				break;
+			}
+			currentNodeScore = distanceScore + stateScore;
+
+			if (currentNodeScore > bestScore) {
+				bestScore = currentNodeScore;
+				goalNode = currentNode;
+			}
+
+			compteur++;
+		}
+		Node auxNode = goalNode;
+
+		for (int i=0; i<depth; i++){ 
+			actionPlan.Add (auxNode.type);
+			if (auxNode.father == null) {
+				break;
+			} else {
+
+				Debug.Log (auxNode.id);
+				auxNode = auxNode.father;
 			}
 		}
-
-		int lineR = environmentC.rooms [roomGoal].lineR;
-		int columnR = environmentC.rooms [roomGoal].columnR;
-
-		if (lineV > lineR) {
-			for (int i = 0; i < lineV - lineR; i++) {
-				actionPlan.Add (3);
-			}
+		for (int i = 0; i < actionPlan.Count; i++) {
+		//	Debug.Log("ActionPlan : " + i + " Next Move " + actionPlan[i]);
 		}
-		if (lineV < lineR) {
-			for (int i = 0; i < lineR - lineV; i++) {
-				actionPlan.Add (1);
-			}
-		}
-		if (columnV > columnR) {
-			for (int i = 0; i < columnV - columnR; i++) {
-				actionPlan.Add (2);
-			}
-		}
-		if (columnV < columnR) {
-			for (int i = 0; i < columnR - columnV; i++) {
-				actionPlan.Add (0);
-			}
-		}
-
-
-		int perceptState = perceipts[roomGoal];
-		switch (perceptState) {
-		case 0:
-			break;
-		case 1:
-			actionPlan.Add (4);
-			break;
-		case 2:
-			actionPlan.Add (5);
-			break;
-		case 3:
-			actionPlan.Add (5);
-			actionPlan.Add (4);
-			break;
-		}
-
 	}
 
 	/// <summary>
@@ -216,6 +221,8 @@ public class VaccumController : MonoBehaviour {
 			while (actionPlan.Count != 0) {
 				int action = (int)actionPlan [0];
 				switch (action) {
+				case -1:
+				break;
 				case 0:
 					yield return legC_ActionWait;
 					legC.move (0);

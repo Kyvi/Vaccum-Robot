@@ -108,7 +108,7 @@ public class EnvironmentController : MonoBehaviour {
 		yield return waitDelay;
 		generateDust ();
 		generateJewel ();
-		Debug.Log ((float)score/Time.time);
+		// Debug.Log ((float)score/Time.time);
 		StartCoroutine(generate ());
 
 	}
