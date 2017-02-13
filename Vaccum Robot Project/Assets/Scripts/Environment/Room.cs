@@ -49,12 +49,4 @@ public class Room {
 		jewelProbability = jP;
 	}
 
-	/// <summary>
-	/// Calculates the distance to another room r
-	/// </summary>
-	/// <param name="r">the other room r</param>
-	public int distance(Room r){
-		return Mathf.Abs (lineR - r.lineR) + Mathf.Abs (columnR - r.columnR);
-	}
-
 }

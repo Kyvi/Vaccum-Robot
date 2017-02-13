@@ -39,5 +39,7 @@ public class LegController : VaccumPartsController {
 		}
 		vaccumC.transform.position = new Vector3 (vaccumC.startX + vaccumC.columnV * vaccumC.nextX, vaccumC.startY - vaccumC.lineV * vaccumC.nextY, 0);
 		environementC.score += actionScore;
+		environementC.performanceScore += actionScore;
+		environementC.electricityUsed++;
 	}
 }

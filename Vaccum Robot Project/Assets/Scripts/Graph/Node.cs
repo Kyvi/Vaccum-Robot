@@ -4,70 +4,173 @@ using UnityEngine;
 
 public class Node{
 
-
+	/// <summary>
+	/// The identifier of the node, here it's the position of the room its assigned to.
+	/// </summary>
 	public int id;
+
+	/// <summary>
+	/// The score of the Node
+	/// </summary>
+	public int score;
+
+	/// <summary>
+	/// where the node came from :
+	/// -1 : nothing
+	/// 0 : left
+	/// 1 : up
+	/// 2 : right
+	/// 3 : bottom
+	/// 4 : vaccum up
+	/// 5 : take
+	/// </summary>
 	public int type;
 
+	/// <summary>
+	/// The line and column of the node according to room positions
+	/// </summary>
 	public int line;
 	public int column;
 
+	/// <summary>
+	/// The depth of the node in the graph
+	/// </summary>
 	public int depth;
 
+	/// <summary>
+	/// The father of the node
+	/// </summary>
 	public Node father;
+	/// <summary>
+	/// The children of the node
+	/// </summary>
 	public List<Node> children;
 
+	/// <summary>
+	/// nbRooms only refers here to the number of elements in the states[] Array
+	/// states : current states of the other actual rooms.
+	/// </summary>
 	public int nbRooms;
 	public int[] states;
 
+	/// <summary>
+	/// nbScores refers to the number of elements in the actionScores[] Array
+	/// 0 -> Move 
+	/// 1 -> VaccumUpDust
+	/// 2 -> TakeJewel
+	/// 3 -> VaccumUpJewel
+	/// The scores of the different actions.
+	/// </summary>
+	public int nbScores;
+	public int[] actionScores;
 
-	public Node(int type, int id, int line, int column, int nb, int[] states, int depth, Node father){
+	/// <summary>
+	/// Initializes a new instance of the <see cref="Node"/> class.
+	/// </summary>
+	/// <param name="type">Type.</param>
+	/// <param name="id">Identifier.</param>
+	/// <param name="line">Line.</param>
+	/// <param name="column">Column.</param>
+	/// <param name="nb">Nb.</param>
+	/// <param name="states">States.</param>
+	/// <param name="depth">Depth.</param>
+	/// <param name="father">Father.</param>
+
+
+	
+	public Node(int type, int id, int line, int column, 
+		int nbRooms, int[] states, int depth, Node father, int score, int nbScores, int[] actionScores){
 		this.type = type;
 		this.id = id;
 		this.line = line;
 		this.column = column;
-		nbRooms = nb;
+		this.nbRooms = nbRooms;
 		this.states = new int[nbRooms];
 		for (int i = 0; i < nbRooms; i++) {
 			this.states [i] = states [i];
 		}
 
+		this.nbScores= nbScores;
+		this.actionScores = new int[nbScores];
+		for (int i = 0; i < nbScores; i++) {
+			this.actionScores [i] = actionScores [i];
+		}
+
 		this.depth = depth;
 		this.father = father;
+		this.score = score;
 
 		children = new List<Node> ();
 
 	}
 
-	public void addVaccumUp(int[] s){
-		children.Add (new Node (4, id, line, column, nbRooms, s, depth+1,this));
+	public string toString(){
+		return "Informations : " + "type : " + type  + "  id : " + id +  "  score : " + score + "  depth : " + depth;
 	}
 
-	public void addTake(int[] s){
-		children.Add (new Node (5, id, line, column, nbRooms, s, depth+1,this));
+	/// <summary>
+	/// Adds different type of children nodes
+	/// </summary>
+	/// <param name="s">S.</param>
+	public void addVaccumUp(){
+		int auxScore = score;
+		switch (states [id]) {
+		case 0: 
+			break;
+		case 1:
+			auxScore  += actionScores [1];
+			break;
+		case 2:
+			auxScore  += actionScores [3];
+			break;
+		case 3:
+			auxScore  = score + actionScores [1] + actionScores [3];
+			break;
+		}
+		children.Add (new Node (4, id, line, column, nbRooms, states, depth+1,this, auxScore , nbScores, actionScores));
 	}
 
-	public void addRight(int[] s){
-		children.Add (new Node (0, id+1, line, column+1, nbRooms, s, depth+1,this));
+	public void addTake(){
+		int auxScore = score;
+		switch (states [id]) {
+		case 0:
+			break;
+		case 1:
+			break;
+		case 2:
+			auxScore += actionScores [2];
+			break;
+		case 3:
+			auxScore += actionScores [2];
+			break;
+		}
+		children.Add (new Node (5, id, line, column, nbRooms, states, depth+1,this, auxScore, nbScores, actionScores));
 	}
 
-	public void addLeft(int[] s){
-		children.Add (new Node (2, id-1, line, column+1, nbRooms, s, depth+1,this));
+	public void addRight(){
+		children.Add (new Node (0, id+1, line, column+1, nbRooms, states, depth+1,this, score+actionScores[0], nbScores, actionScores));
 	}
 
-	public void addTop(int[] s){
-		children.Add (new Node (3, id-5, line-1, column, nbRooms, s, depth+1,this));
+	public void addLeft(){
+		children.Add (new Node (2, id-1, line, column-1, nbRooms, states, depth+1,this, score+actionScores[0], nbScores, actionScores));
 	}
 
-	public void addBottom(int[] s){
-		children.Add (new Node (1, id+5, line+1, column, nbRooms, s, depth+1,this));
+	public void addTop(){
+		children.Add (new Node (3, id-5, line-1, column, nbRooms, states, depth+1,this, score+actionScores[0], nbScores, actionScores));
 	}
 
-	public void addNothing(int[] s){
-		children.Add(new Node(-1,id,line,column, nbRooms, s, depth+1,this));
+	public void addBottom(){
+		children.Add (new Node (1, id+5, line+1, column, nbRooms, states, depth+1,this, score+actionScores[0], nbScores, actionScores));
 	}
 
+	public void addNothing(){
+		children.Add(new Node(-1,id,line,column, nbRooms, states, depth+1,this, score, nbScores, actionScores));
+	}
+
+	/// <summary>
+	/// Creates the children.
+	/// </summary>
 	public void createChildren(){
-
 		if (type == 4) {
 			states [id] = 0;
 		}
@@ -79,24 +182,24 @@ public class Node{
 				}
 			}
 		}
-		
-		addNothing (states);
-		addVaccumUp (states);
-		addTake (states);
+
+		addVaccumUp ();
+		addTake ();
 
 		if (line != 0) {
-			addTop (states);
+			addTop ();
 		}
 		if (line != 4) {
-			addBottom (states);
+			addBottom ();
 		}
 		if (column != 0) {
-			addLeft (states);
+			addLeft ();
 		}
 		if (column != 4) {
-			addRight (states);
+			addRight ();
 		}
 
+		addNothing ();
 		}
 
 

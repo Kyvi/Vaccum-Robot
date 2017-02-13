@@ -1,13 +1,33 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class EnvironmentController : MonoBehaviour {
 
 	/// <summary>
-	/// The score that the vacuum tries to maximise.
+	/// UI text elements.
+	/// </summary>
+	public Text timeText; 
+	public Text scoreText; 
+	public Text performanceMesureText; 
+	public Text scoreOverallText;
+	public Text electricityUsedText;
+	public Text dustText;
+	public Text jewelText;
+	public Text jewelLostText;
+
+	/// <summary>
+	/// The score overall that the vacuum tries to maximize.
 	/// </summary>
 	public int score = 0;
+
+	/// <summary>
+	/// The performance mesure : score per second.
+	/// </summary>
+	public int performanceScore;
+	public float timeReset;
+	public float performanceMesure = 0; 
 
 	/// <summary>
 	/// The number of rooms.
@@ -23,11 +43,6 @@ public class EnvironmentController : MonoBehaviour {
 	/// The rooms.
 	/// </summary>
 	public Room[] rooms;
-
-	/// <summary>
-	/// distance[i][j] gives the distance between room i and j
-	/// </summary>
-	public int[][] distanceTable;
 
 	/// <summary>
 	/// The dust and jewel prefab
@@ -61,6 +76,18 @@ public class EnvironmentController : MonoBehaviour {
 	public float timeDelay = 0.1f;
 	private WaitForSeconds waitDelay;
 
+	/// <summary>
+	/// Some informations
+	/// electricityUsed : amount of electricity used
+	/// nbDust : number of dust vaccumed up
+	/// nbJewel : number of jewel taken
+	/// nbLostJewel : number of jewel vaccumed up
+	/// </summary>
+	public int electricityUsed = 0;
+	public int nbDust = 0;
+	public int nbJewel = 0;
+	public int nbLostJewel = 0;
+
 	void Awake(){
 		roomDust = new GameObject[nbRooms];
 		roomJewel = new GameObject[nbRooms];
@@ -72,32 +99,37 @@ public class EnvironmentController : MonoBehaviour {
 			float jewelP = Random.value / 200;
 			rooms [i] = new Room (i, 0, i / nbRoomsLine, i % nbRoomsLine, dustP, jewelP);
 		}
-
-		// instantiates the distanceTable 
-		distanceTable = new int[nbRooms] [];
-		for (int i=0; i< nbRooms;i++){
-			distanceTable [i] = new int[nbRooms];
-		}
-
-		// sets one half of distanceTable by calculating the distance between each rooms
-		for (int i = 0; i < nbRooms; i++) {
-			for (int j = i; j < nbRooms; j++) {
-				distanceTable [i] [j] = rooms [i].distance (rooms [j]);
-			}
-		}
-
-		// as the distance between room i and j is the same as between room j and i,
-		// sets other half of distanceTable without calculating the distance between each rooms
-		for (int i = 1; i < nbRooms; i++) {
-			for (int j = 0; j < i; j++) {
-				distanceTable [i] [j] = distanceTable [j] [i];
-			}
-		}
 	}
 
 	void Start () {
 		waitDelay = new WaitForSeconds (timeDelay);
 		StartCoroutine (generate ());
+		InvokeRepeating ("printGlobalInfo", 0, 1);
+	}
+
+	void Update(){
+		timeReset += Time.deltaTime;
+		performanceMesure = (float)performanceScore / timeReset; // Score per second since the last reset
+	}
+
+	public void performanceReset(){
+		timeReset = 0f;
+		performanceScore = 0;
+	}
+
+	/// <summary>
+	/// updates the UI text
+	/// </summary>
+	public void printGlobalInfo(){
+		electricityUsedText.text = "Electricity used : " + electricityUsed;
+		dustText.text = "Dust vaccumed : " + nbDust;
+		jewelText.text = "Jewel saved : " + nbJewel;
+		jewelLostText.text = "Jewel lost : " + nbLostJewel;
+
+		timeText.text = "Time past : " + Time.time;
+		performanceMesureText.text = "Score per second since perf. update : " + performanceMesure;
+		scoreText.text = "Score overall : " + score;
+		scoreOverallText.text = "Score per second overall : " + (float)score / Time.time;
 	}
 
 	/// <summary>
@@ -105,10 +137,9 @@ public class EnvironmentController : MonoBehaviour {
 	/// </summary>
 	private IEnumerator generate()
 	{
-		yield return waitDelay;
+		yield return waitDelay; 
 		generateDust ();
 		generateJewel ();
-		// Debug.Log ((float)score/Time.time);
 		StartCoroutine(generate ());
 
 	}
