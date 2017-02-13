@@ -227,7 +227,7 @@ public class VaccumController : MonoBehaviour {
 					positionBestPerformance = i; // updates the best performance position
 				}
 			}
-			depth = positionBestPerformance - 1; // updates the best depth 
+			depth = positionBestPerformance+1; // updates the best depth 
 		}
 
 	}

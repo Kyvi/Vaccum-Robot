@@ -1979,7 +1979,7 @@ MonoBehaviour:
   nbVaccumText: {fileID: 2093027902}
   nbTakeText: {fileID: 1192261148}
   depth: 1
-  performanceCheckFrequence: 5
+  performanceCheckFrequence: 10
   nbMesures: 7
   position: 0
   lineV: 0
