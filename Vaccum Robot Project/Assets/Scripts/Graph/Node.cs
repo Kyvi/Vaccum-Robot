@@ -15,7 +15,7 @@ public class Node{
 	public int score;
 
 	/// <summary>
-	/// where the node came from :
+	/// the action of the vaccum on choosing this node :
 	/// -1 : nothing
 	/// 0 : left
 	/// 1 : up
@@ -64,6 +64,8 @@ public class Node{
 	public int nbScores;
 	public int[] actionScores;
 
+
+
 	/// <summary>
 	/// Initializes a new instance of the <see cref="Node"/> class.
 	/// </summary>
@@ -71,13 +73,14 @@ public class Node{
 	/// <param name="id">Identifier.</param>
 	/// <param name="line">Line.</param>
 	/// <param name="column">Column.</param>
-	/// <param name="nb">Nb.</param>
+	/// <param name="nbRooms">Nb rooms.</param>
 	/// <param name="states">States.</param>
 	/// <param name="depth">Depth.</param>
 	/// <param name="father">Father.</param>
-
-
-	
+	/// <param name="score">Score.</param>
+	/// <param name="nbScores">Nb scores.</param>
+	/// <param name="actionScores">Action scores.</param>
+	/// 
 	public Node(int type, int id, int line, int column, 
 		int nbRooms, int[] states, int depth, Node father, int score, int nbScores, int[] actionScores){
 		this.type = type;
@@ -111,7 +114,8 @@ public class Node{
 	/// <summary>
 	/// Adds different type of children nodes
 	/// </summary>
-	/// <param name="s">S.</param>
+
+
 	public void addVaccumUp(){
 		int auxScore = score;
 		switch (states [id]) {

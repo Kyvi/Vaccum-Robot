@@ -5,8 +5,12 @@ using UnityEngine.UI;
 
 public class VaccumController : MonoBehaviour {
 
+	/********************************************************/
+	/************** UI ELEMENTS *****************************/
+	/********************************************************/
+
 	/// <summary>
-	/// UI text elements.
+	/// Some Text informations about the depth where the instance explore and the actions of the vaccum.
 	/// </summary>
 	public Text depthText;
 	public Text nbMovesText;
@@ -14,16 +18,36 @@ public class VaccumController : MonoBehaviour {
 	public Text nbTakeText;
 
 	/// <summary>
-	/// The graph and the depth where the vaccum explores the graph.
+	/// Some informations about the different actions
+	/// nbMoves : number of moves made by the vaccum
+	/// nbVaccum : number of vaccuming action performed
+	/// nbTake : number of taking action performed
 	/// </summary>
-	public Graph graph;
-	public int depth = 1;
+	private int nbMoves = 0;
+	private int nbVaccum = 0;
+	private int nbTake = 0;
+
+	/// <summary>
+	/// Some Graphics utilities :
+	/// startX : horizontal position of room 0 's Vaccum
+	/// startY : vertical position of room 0 's Vaccum
+	/// nextX : horizontal distance between each room
+	/// nextY : vertical distance between each room
+	/// </summary>
+	public float startX = -0.5f;
+	public float startY = 1.8f;
+	public float nextX = 2.33f;
+	public float nextY = 1.47f;
+
+	/********************************************************/
+	/************** PERFFORMANCE MEASURES *******************/
+	/********************************************************/
 
 	/// <summary>
 	/// performanceCheckFrequence : The number of loop of the coroutine this instance goes through before checking its performance.
 	/// loopLeft : the number of loop left until this instance goes through before checking its performance.
 	/// </summary>
-	public int performanceCheckFrequence = 5;
+	public int performanceCheckFrequence = 7;
 	private int loopLeft;
 
 	/// <summary>
@@ -34,31 +58,8 @@ public class VaccumController : MonoBehaviour {
 	/// </summary>
 	private bool isMesuresFull = false;
 	private int positionCurrentMesure = 0;
-	public int nbMesures = 7; // 7 is the max here, don't try 8, cause at depth = 8, the graph takes to much time to be explored.
+	public int nbMesures = 6; // 7 is the max here, don't try 8, cause at depth = 8, the graph takes to much time to be explored.
 	private float[] performanceMesures;
-
-
-	/// <summary>
-	/// The position of the vaccum.
-	/// </summary>
-	public int position=0 ;    
-
-	/// <summary>
-	/// line and column of the vaccum : graphic position
-	/// </summary>
-	public int lineV = 0 ;        
-	public int columnV = 0 ; 
-
-	/// <summary>
-	/// The perceipts contains the states of the rooms that the vaccum thinks.
-	/// </summary>
-	public int[] perceipts;          
-
-	/// <summary>
-	/// The room scores.
-	/// A high score means a high priority for the Vaccum.
-	/// </summary>
-	public int[] roomScores;
 
 	/// <summary>
 	/// nbScores refers to the number of elements in the actionScores[] Array
@@ -83,55 +84,69 @@ public class VaccumController : MonoBehaviour {
 	/// </summary>
 	public ArrayList actionPlan = new ArrayList();
 
+	/********************************************************/
+	/**************** ENVIRONMENT ***************************/
+	/********************************************************/
+
 	/// <summary>
 	/// The environment.
 	/// </summary>
-	public GameObject environment;  
+	public GameObject environment; 
 
 	/// <summary>
-	/// Some Graphics utilities :
-	/// startX : horizontal position of room 0 's Vaccum
-	/// startY : vertical position of room 0 's Vaccum
-	/// nextX : horizontal distance between each room
-	/// nextY : vertical distance between each room
-	/// </summary>
-	public float startX = -0.5f;
-	public float startY = 1.8f;
-	public float nextX = 2.33f;
-	public float nextY = 1.47f;
-
-	/// <summary>
-	/// Reference to the actual EnvironmentController, CameraController, ArmController, LegController and PipeController
+	/// Reference to the actual EnvironmentController
 	/// </summary>
 	private EnvironmentController environmentC;
+
+	/// <summary>
+	/// The graph and the depth where the vaccum explores the graph.
+	/// </summary>
+	public Graph graph;
+	public int depth = 1;
+
+	/// <summary>
+	/// The position of the vaccum in the environment.
+	/// </summary>
+	public int position=0 ;    
+
+	/// <summary>
+	/// line and column of the vaccum : graphic position.
+	/// </summary>
+	public int lineV = 0 ;        
+	public int columnV = 0 ; 
+
+	/// <summary>
+	/// The perceipts contains the states of the rooms that the vaccum loads with the camera.
+	/// </summary>
+	public int[] perceipts;          
+
+	/********************************************************/
+	/************** SENSORS AND EFFECTORS *******************/
+	/********************************************************/
+ 
+	/// <summary>
+	/// Reference to the actual CameraController, ArmController, LegController and PipeController
+	/// </summary>
 	private CameraController cameraC;
 	private ArmController armC;
 	private LegController legC;
 	private PipeController pipeC;
 
 	/// <summary>
-	/// The times needed for the part to do their actions.
+	/// The times needed for the sensors and effectors to do their actions.
 	/// </summary>
 	private WaitForSeconds cameraC_ActionWait;
 	private WaitForSeconds armC_ActionWait;
 	private WaitForSeconds legC_ActionWait;
 	private WaitForSeconds pipeC_ActionWait;
 
-	/// <summary>
-	/// Some informations
-	/// nbMoves : number of moves made by the vaccum
-	/// nbVaccum : number of vaccuming action performed
-	/// nbTake : number of taking action performed
-	/// </summary>
-	private int nbMoves = 0;
-	private int nbVaccum = 0;
-	private int nbTake = 0;
 
 	/// <summary>
-	/// Initializes some parameters of the vaccum.
+	/// Initializes some parameters of the vaccum and launch some methods.
 	/// </summary>
 	void Start(){
 		
+		// Gets the environment, sensors and effectors
 		environmentC = environment.GetComponent<EnvironmentController>();
 		cameraC = environment.GetComponent<CameraController>();
 
@@ -139,12 +154,17 @@ public class VaccumController : MonoBehaviour {
 		legC = GetComponent<LegController>();
 		pipeC = GetComponent<PipeController>();
 
-		loopLeft = performanceCheckFrequence;
-		performanceMesures = new float[nbMesures];
+		cameraC_ActionWait = new WaitForSeconds (cameraC.ActionTime);
+		armC_ActionWait = new WaitForSeconds (armC.ActionTime);
+		legC_ActionWait = new WaitForSeconds (legC.ActionTime);
+		pipeC_ActionWait = new WaitForSeconds (pipeC.ActionTime);
 
 		int nbRooms = environmentC.nbRooms;
 		perceipts = new int[nbRooms];
-		roomScores = new int[nbRooms];
+
+		// Initialize some values needed for Performance Measures
+		loopLeft = performanceCheckFrequence;
+		performanceMesures = new float[nbMesures];
 
 		actionScores = new int[nbScores];
 		actionScores[0] = legC.actionScore;
@@ -152,15 +172,14 @@ public class VaccumController : MonoBehaviour {
 		actionScores[2] = armC.actionScore;
 		actionScores[3] = pipeC.stealingJewelScore;
 
-		cameraC_ActionWait = new WaitForSeconds (cameraC.ActionTime);
-		armC_ActionWait = new WaitForSeconds (armC.ActionTime);
-		legC_ActionWait = new WaitForSeconds (legC.ActionTime);
-		pipeC_ActionWait = new WaitForSeconds (pipeC.ActionTime);
-
-		StartCoroutine(work()); 
-		InvokeRepeating ("printGlobalInfo", 0, 1);
+		// Launch some methods. 
+		StartCoroutine(work()); // Launch the action function of this instance
+		InvokeRepeating ("printGlobalInfo", 0, 1); // Do "printGlobalInfo()" every second.
 	}
 
+	/// <summary>
+	/// Updates the UI text
+	/// </summary>
 	public void printGlobalInfo(){
 		depthText.text = "Current depth : " + depth;
 		nbMovesText.text = "Moves made : " + nbMoves;
@@ -169,11 +188,11 @@ public class VaccumController : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// Main method of the Vaccum where it does its work following BDI method
+	/// Action function of the Vaccum where it does its work following BDI method
 	/// </summary>
 	private IEnumerator work()
 	{
-		// Performance mesure update 
+		// Performance measure update 
 		if (!isMesuresFull) {
 			if (loopLeft == 0) {
 				performanceUpdate ();
@@ -185,6 +204,8 @@ public class VaccumController : MonoBehaviour {
 
 		// Beliefs
 		yield return StartCoroutine(loadPerceipts());
+
+		// Graph construction
 		Node root = new Node (-1, position, lineV, columnV,  environmentC.nbRooms, perceipts, 0, null, 0, nbScores, actionScores ); // root Node
 		graph = new Graph (root,depth); // Graph from actual beliefs of AI
 
@@ -208,14 +229,14 @@ public class VaccumController : MonoBehaviour {
 		float newMesure = environmentC.performanceMesure; // memorize the current performanceMesure
 		environmentC.performanceReset (); // Reset the time and score
 
-		// Updates the performance mesure Array
+		// Updates the performance measure Array
 		performanceMesures [positionCurrentMesure] = newMesure;
 		positionCurrentMesure++; 
 		depth++; //Updates the depth where the vaccum explores the graph 
 
 
-		// Determines the best PerformanceMesure
-		if (positionCurrentMesure == nbMesures) { // checks if the performance mesure Array is full
+		// Determines the best Performance measure
+		if (positionCurrentMesure == nbMesures) { // checks if the performance measure Array is full
 			isMesuresFull = true; // the array is full
 			int positionBestPerformance = 0; // initializes the position of the best performance
 			float bestPerformance = performanceMesures [0]; // initializes the best performance 
@@ -277,56 +298,56 @@ public class VaccumController : MonoBehaviour {
 
 	/// <summary>
 	/// Executes the action plan :
-	/// Solve each action from ActionPlan arrayList.
+	/// Solves each action from ActionPlan arrayList one by one.
 	/// </summary>
 	private IEnumerator executeActionPlan(){
-		//Version 1
+		
 			while (actionPlan.Count != 0) {
 				int action = (int)actionPlan [0];
 				switch (action) {
-				case -1:
+				case -1: // Nothing
+					actionPlan.RemoveAt (0); // Remove the action from the action plan
+					break;
+				case 0: // Move right 
+					yield return legC_ActionWait; // Simulates leg action
+					legC.move (0); // Executes leg action
+					nbMoves++; // Increments number of moves of the vaccum
 					actionPlan.RemoveAt (0);
 					break;
-				case 0:
-					yield return legC_ActionWait;
-					legC.move (0);
-					nbMoves++;
-					actionPlan.RemoveAt (0);
-					break;
-				case 1:
+				case 1: // Move down
 					yield return legC_ActionWait;
 					legC.move (1);
 					nbMoves++;
 					actionPlan.RemoveAt (0);
 					break;
-				case 2:
+				case 2: // Move left
 					yield return legC_ActionWait;
 					legC.move (2);
 					nbMoves++;
 					actionPlan.RemoveAt (0);
 					break;
-				case 3:
+				case 3: // Move up
 					yield return legC_ActionWait;
 					legC.move (3);
 					nbMoves++;
 					actionPlan.RemoveAt (0);
 					break;
-				case 4:
-					yield return cameraC_ActionWait;
-					int roomState = cameraC.view (position);
-					if (roomState == 1) {
-						yield return pipeC_ActionWait;
-						pipeC.vaccumUp ();
-						nbVaccum++;
+				case 4: // Vaccum up
+					yield return cameraC_ActionWait;  // Simulates camera action
+					int roomState = cameraC.view (position); // Gets the state of the current Vaccum's room
+					if (roomState == 1) { // If there is only dust
+						yield return pipeC_ActionWait; // Simulates pipe action
+						pipeC.vaccumUp (); // Executes pipe action
+						nbVaccum++; // Increments number of vaccuming of the vaccum
 						actionPlan.RemoveAt (0);
-					} else {
-						actionPlan.Clear ();
+					} else { // Jewel must have appeared during the vaccum execution plan
+						actionPlan.Clear (); // Abort the execution of the plan and restart the action function
 					}
 					break;
-				case 5:
-					yield return armC_ActionWait;
-					armC.take ();
-					nbTake++;
+				case 5: // Take
+					yield return armC_ActionWait; // Simulates arm action
+					armC.take (); // Executes arm action
+					nbTake++; // Increments number of taking of the vaccum
 					actionPlan.RemoveAt (0);
 					break;
 				}

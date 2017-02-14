@@ -5,8 +5,12 @@ using UnityEngine.UI;
 
 public class EnvironmentController : MonoBehaviour {
 
+	/********************************************************/
+	/************** UI ELEMENTS *****************************/
+	/********************************************************/
+
 	/// <summary>
-	/// UI text elements.
+	/// Some Text informations about the score of the vaccum and the dust and jewel of the environment.
 	/// </summary>
 	public Text timeText; 
 	public Text scoreText; 
@@ -16,6 +20,38 @@ public class EnvironmentController : MonoBehaviour {
 	public Text dustText;
 	public Text jewelText;
 	public Text jewelLostText;
+
+	/// <summary>
+	/// Some informations
+	/// electricityUsed : amount of electricity used
+	/// nbDust : number of dust vaccumed up
+	/// nbJewel : number of jewel taken
+	/// nbLostJewel : number of jewel vaccumed up
+	/// </summary>
+	public int electricityUsed = 0;
+	public int nbDust = 0;
+	public int nbJewel = 0;
+	public int nbLostJewel = 0;
+
+	/// <summary>
+	/// Some Graphics utilities :
+	/// startXDust : horizontal position of room 0 's Dust
+	/// startYDust : vertical position of room 0 's Dust
+	/// startXJewel : horizontal position of room 0 's Jewel
+	/// startYJewel : vertical position of room 0 's Jewel
+	/// nextX : horizontal distance between each room
+	/// nextY : vertical distance between each room
+	/// </summary>
+	public float startXDust = 0.6f;
+	public float startYDust = 1.8f;
+	public float startXJewel = 1f;
+	public float startYJewel = 2f;
+	public float nextX = 2.33f;
+	public float nextY = 1.47f;
+
+	/********************************************************/
+	/************** PERFFORMANCE MEASURES *******************/
+	/********************************************************/
 
 	/// <summary>
 	/// The score overall that the vacuum tries to maximize.
@@ -28,6 +64,10 @@ public class EnvironmentController : MonoBehaviour {
 	public int performanceScore;
 	public float timeReset;
 	public float performanceMesure = 0; 
+
+	/********************************************************/
+	/******************** ROOMS *****************************/
+	/********************************************************/
 
 	/// <summary>
 	/// The number of rooms.
@@ -54,22 +94,6 @@ public class EnvironmentController : MonoBehaviour {
 	public GameObject[] roomJewel;
 
 	/// <summary>
-	/// Some Graphics utilities :
-	/// startXDust : horizontal position of room 0 's Dust
-	/// startYDust : vertical position of room 0 's Dust
-	/// startXJewel : horizontal position of room 0 's Jewel
-	/// startYJewel : vertical position of room 0 's Jewel
-	/// nextX : horizontal distance between each room
-	/// nextY : vertical distance between each room
-	/// </summary>
-	public float startXDust = 0.6f;
-	public float startYDust = 1.8f;
-	public float startXJewel = 1f;
-	public float startYJewel = 2f;
-	public float nextX = 2.33f;
-	public float nextY = 1.47f;
-
-	/// <summary>
 	/// timeDelay : delay between each random changes
 	/// waitDelay : delay between each random changes
 	/// </summary>
@@ -77,17 +101,8 @@ public class EnvironmentController : MonoBehaviour {
 	private WaitForSeconds waitDelay;
 
 	/// <summary>
-	/// Some informations
-	/// electricityUsed : amount of electricity used
-	/// nbDust : number of dust vaccumed up
-	/// nbJewel : number of jewel taken
-	/// nbLostJewel : number of jewel vaccumed up
+	/// Initializes some parameters of the environment
 	/// </summary>
-	public int electricityUsed = 0;
-	public int nbDust = 0;
-	public int nbJewel = 0;
-	public int nbLostJewel = 0;
-
 	void Awake(){
 		roomDust = new GameObject[nbRooms];
 		roomJewel = new GameObject[nbRooms];
@@ -101,24 +116,33 @@ public class EnvironmentController : MonoBehaviour {
 		}
 	}
 
+	/// <summary>
+	/// Initializes some parameters of the environment and launch some methods.
+	/// </summary>
 	void Start () {
-		waitDelay = new WaitForSeconds (timeDelay);
-		StartCoroutine (generate ());
-		InvokeRepeating ("printGlobalInfo", 0, 1);
+		waitDelay = new WaitForSeconds (timeDelay); // initialize the waiting time between each random generation
+		StartCoroutine (generate ()); // Launch the dust and jewel generation of this instance
+		InvokeRepeating ("printGlobalInfo", 0, 1);  // Do "printGlobalInfo()" every second.
 	}
 
+	/// <summary>
+	/// Updates the Performance Measures of the vaccum on each frame.
+	/// </summary>
 	void Update(){
 		timeReset += Time.deltaTime;
 		performanceMesure = (float)performanceScore / timeReset; // Score per second since the last reset
 	}
 
+	/// <summary>
+	/// Resets the Performance measure
+	/// </summary>
 	public void performanceReset(){
 		timeReset = 0f;
 		performanceScore = 0;
 	}
 
 	/// <summary>
-	/// updates the UI text
+	/// Updates the UI text
 	/// </summary>
 	public void printGlobalInfo(){
 		electricityUsedText.text = "Electricity used : " + electricityUsed;
@@ -141,10 +165,8 @@ public class EnvironmentController : MonoBehaviour {
 		generateDust ();
 		generateJewel ();
 		StartCoroutine(generate ());
-
 	}
 		
-
 	/// <summary>
 	/// Navigates through the rooms and generate dust in them or not according to a random factor.
 	/// </summary>
