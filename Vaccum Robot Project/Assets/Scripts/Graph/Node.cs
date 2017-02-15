@@ -80,7 +80,7 @@ public class Node{
 	/// <param name="score">Score.</param>
 	/// <param name="nbScores">Nb scores.</param>
 	/// <param name="actionScores">Action scores.</param>
-	/// 
+
 	public Node(int type, int id, int line, int column, 
 		int nbRooms, int[] states, int depth, Node father, int score, int nbScores, int[] actionScores){
 		this.type = type;
@@ -120,6 +120,7 @@ public class Node{
 		int auxScore = score;
 		switch (states [id]) {
 		case 0: 
+			auxScore -= 1;
 			break;
 		case 1:
 			auxScore  += actionScores [1];
@@ -138,8 +139,10 @@ public class Node{
 		int auxScore = score;
 		switch (states [id]) {
 		case 0:
+			auxScore -= 1;
 			break;
 		case 1:
+			auxScore -= 1;
 			break;
 		case 2:
 			auxScore += actionScores [2];

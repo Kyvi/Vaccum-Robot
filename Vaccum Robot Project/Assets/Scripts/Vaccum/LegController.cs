@@ -19,6 +19,8 @@ public class LegController : VaccumPartsController {
 	/// </summary>
 	/// <param name="direction">Direction</param>
 	public void move(int direction){
+
+
 		switch (direction) {
 		case 0:
 			vaccumC.position++;
@@ -37,9 +39,13 @@ public class LegController : VaccumPartsController {
 			vaccumC.lineV--;
 			break;
 		}
+
+
+		vaccumC.nbMoves++; 
 		vaccumC.transform.position = new Vector3 (vaccumC.startX + vaccumC.columnV * vaccumC.nextX, vaccumC.startY - vaccumC.lineV * vaccumC.nextY, 0);
-		environementC.score += actionScore;
+		environementC.score += actionScore; 
 		environementC.performanceScore += actionScore;
 		environementC.electricityUsed++;
+
 	}
 }

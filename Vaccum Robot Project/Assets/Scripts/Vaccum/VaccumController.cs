@@ -10,9 +10,10 @@ public class VaccumController : MonoBehaviour {
 	/********************************************************/
 
 	/// <summary>
-	/// Some Text informations about the depth where the instance explore and the actions of the vaccum.
+	/// Some Text informations about the depth where the instance explore, number of actions to be executed and the actions of the vaccum.
 	/// </summary>
 	public Text depthText;
+	public Text nbActionText;
 	public Text nbMovesText;
 	public Text nbVaccumText;
 	public Text nbTakeText;
@@ -23,9 +24,9 @@ public class VaccumController : MonoBehaviour {
 	/// nbVaccum : number of vaccuming action performed
 	/// nbTake : number of taking action performed
 	/// </summary>
-	private int nbMoves = 0;
-	private int nbVaccum = 0;
-	private int nbTake = 0;
+	public int nbMoves = 0;
+	public int nbVaccum = 0;
+	public int nbTake = 0;
 
 	/// <summary>
 	/// Some Graphics utilities :
@@ -44,10 +45,12 @@ public class VaccumController : MonoBehaviour {
 	/********************************************************/
 
 	/// <summary>
+	/// nbActionExecuted : The number of actions executed from the action plan before executing the work function again
 	/// performanceCheckFrequence : The number of loop of the coroutine this instance goes through before checking its performance.
 	/// loopLeft : the number of loop left until this instance goes through before checking its performance.
 	/// </summary>
-	public int performanceCheckFrequence = 7;
+	public int nbActionExecuted = 1;
+	public int performanceCheckFrequence = 10;
 	private int loopLeft;
 
 	/// <summary>
@@ -59,7 +62,7 @@ public class VaccumController : MonoBehaviour {
 	private bool isMesuresFull = false;
 	private int positionCurrentMesure = 0;
 	public int nbMesures = 6; // 7 is the max here, don't try 8, cause at depth = 8, the graph takes to much time to be explored.
-	private float[] performanceMesures;
+	private List<float> performanceMesures;
 
 	/// <summary>
 	/// nbScores refers to the number of elements in the actionScores[] Array
@@ -99,9 +102,8 @@ public class VaccumController : MonoBehaviour {
 	private EnvironmentController environmentC;
 
 	/// <summary>
-	/// The graph and the depth where the vaccum explores the graph.
+	/// The depth where the vaccum explores the graph.
 	/// </summary>
-	public Graph graph;
 	public int depth = 1;
 
 	/// <summary>
@@ -164,7 +166,7 @@ public class VaccumController : MonoBehaviour {
 
 		// Initialize some values needed for Performance Measures
 		loopLeft = performanceCheckFrequence;
-		performanceMesures = new float[nbMesures];
+		performanceMesures = new List<float>();
 
 		actionScores = new int[nbScores];
 		actionScores[0] = legC.actionScore;
@@ -182,6 +184,7 @@ public class VaccumController : MonoBehaviour {
 	/// </summary>
 	public void printGlobalInfo(){
 		depthText.text = "Current depth : " + depth;
+		nbActionText.text = "Current number of executed actions : " + nbActionExecuted;
 		nbMovesText.text = "Moves made : " + nbMoves;
 		nbVaccumText.text = "Vaccuming performed : " + nbVaccum;
 		nbTakeText.text = "Taking performed : " + nbTake;
@@ -205,10 +208,6 @@ public class VaccumController : MonoBehaviour {
 		// Beliefs
 		yield return StartCoroutine(loadPerceipts());
 
-		// Graph construction
-		Node root = new Node (-1, position, lineV, columnV,  environmentC.nbRooms, perceipts, 0, null, 0, nbScores, actionScores ); // root Node
-		graph = new Graph (root,depth); // Graph from actual beliefs of AI
-
 		// Desire
 		setActionPlan ();
 
@@ -224,31 +223,58 @@ public class VaccumController : MonoBehaviour {
 	/// Updates the perfomance of the Vaccum
 	/// </summary>
 	public void performanceUpdate(){
-
-		//Updates the depth where the vaccum explores the graph and the performance mesure Array.
-		float newMesure = environmentC.performanceMesure; // memorize the current performanceMesure
+		float newMesure = environmentC.performanceMesure; // memorize the current Performance Measure
 		environmentC.performanceReset (); // Reset the time and score
 
-		// Updates the performance measure Array
-		performanceMesures [positionCurrentMesure] = newMesure;
+		// Updates the performance measure List
+		performanceMesures.Add(newMesure);
 		positionCurrentMesure++; 
-		depth++; //Updates the depth where the vaccum explores the graph 
+		if (depth == nbActionExecuted) {
+			depth++; //Updates the depth where the vaccum explores the graph 
+			nbActionExecuted = 1;
+		} else {
+			nbActionExecuted++; //Increases the nb of actions done during executions
+		}
 
 
 		// Determines the best Performance measure
-		if (positionCurrentMesure == nbMesures) { // checks if the performance measure Array is full
+		int nbTot = (nbMesures*(nbMesures+1))/2;
+		if (positionCurrentMesure == nbTot) { // checks if the performance measure Array is full
 			isMesuresFull = true; // the array is full
 			int positionBestPerformance = 0; // initializes the position of the best performance
 			float bestPerformance = performanceMesures [0]; // initializes the best performance 
 
 			// Finds the best Performance
-			for (int i = 0; i < nbMesures; i++) {
+			for (int i = 0; i < nbTot; i++) {
 				if (performanceMesures [i] > bestPerformance) {
 					bestPerformance = performanceMesures [i]; // updates the best performance
 					positionBestPerformance = i; // updates the best performance position
 				}
 			}
-			depth = positionBestPerformance+1; // updates the best depth 
+
+			int[] depthArray = new int[nbTot];
+			int aux = 0;
+			int aux2 = 1;
+			for (int i = 0; i < depth-1; i++) {
+				for (int j = aux; j < aux+1+i; j++) {
+					depthArray [j] = aux2;
+				}
+				aux2++;
+				aux = aux + 1 + i;
+			}
+			depth = depthArray [positionBestPerformance]; // updates the best depth 
+
+
+			int[] nbActionArray = new int[nbTot];
+			int aux3 = 0;
+			for (int i = 0; i < depth; i++) {
+				for (int j = aux3; j < aux3+1+i; j++) {
+					nbActionArray[j] = j-aux3+1;
+					Debug.Log (j);
+				}
+				aux3 = aux3 + 1 + i;
+			}
+			nbActionExecuted = nbActionArray [positionBestPerformance]; // Updates the number of actions executed from the action plan
 		}
 
 	}
@@ -267,7 +293,11 @@ public class VaccumController : MonoBehaviour {
 	/// Sets the action plan.
 	/// </summary>
 	public void setActionPlan(){
-		
+
+		// Graph construction
+		Node root = new Node (-1, position, lineV, columnV,  environmentC.nbRooms, perceipts, 0, null, 0, nbScores, actionScores ); // root Node
+		Graph graph = new Graph (root,depth); // Graph from actual beliefs of AI
+
 		int bestScore = 0; // Initialize the best score of all the nodes
 		Node currentNode = graph.graphNodes [0]; // Initialize the current Node
 		Node goalNode = currentNode; // Initialize the goal Node
@@ -301,8 +331,8 @@ public class VaccumController : MonoBehaviour {
 	/// Solves each action from ActionPlan arrayList one by one.
 	/// </summary>
 	private IEnumerator executeActionPlan(){
-		
-			while (actionPlan.Count != 0) {
+		int nbActions = nbActionExecuted;
+		while (actionPlan.Count != 0 && nbActions != 0) {
 				int action = (int)actionPlan [0];
 				switch (action) {
 				case -1: // Nothing
@@ -311,25 +341,21 @@ public class VaccumController : MonoBehaviour {
 				case 0: // Move right 
 					yield return legC_ActionWait; // Simulates leg action
 					legC.move (0); // Executes leg action
-					nbMoves++; // Increments number of moves of the vaccum
 					actionPlan.RemoveAt (0);
 					break;
 				case 1: // Move down
 					yield return legC_ActionWait;
 					legC.move (1);
-					nbMoves++;
 					actionPlan.RemoveAt (0);
 					break;
 				case 2: // Move left
 					yield return legC_ActionWait;
 					legC.move (2);
-					nbMoves++;
 					actionPlan.RemoveAt (0);
 					break;
 				case 3: // Move up
 					yield return legC_ActionWait;
 					legC.move (3);
-					nbMoves++;
 					actionPlan.RemoveAt (0);
 					break;
 				case 4: // Vaccum up
@@ -338,7 +364,6 @@ public class VaccumController : MonoBehaviour {
 					if (roomState == 1) { // If there is only dust
 						yield return pipeC_ActionWait; // Simulates pipe action
 						pipeC.vaccumUp (); // Executes pipe action
-						nbVaccum++; // Increments number of vaccuming of the vaccum
 						actionPlan.RemoveAt (0);
 					} else { // Jewel must have appeared during the vaccum execution plan
 						actionPlan.Clear (); // Abort the execution of the plan and restart the action function
@@ -347,10 +372,10 @@ public class VaccumController : MonoBehaviour {
 				case 5: // Take
 					yield return armC_ActionWait; // Simulates arm action
 					armC.take (); // Executes arm action
-					nbTake++; // Increments number of taking of the vaccum
 					actionPlan.RemoveAt (0);
 					break;
 				}
+			nbActions--;
 			}
 	}
 		

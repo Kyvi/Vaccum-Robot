@@ -14,20 +14,31 @@ public class ArmController : VaccumPartsController {
 	/// </summary>
 	public void take(){
 		environementC.electricityUsed++;
+		vaccumC.nbTake++; 
 		int roomState = environementC.rooms [vaccumC.position].state;
-		if (roomState == 2) {
+		switch (roomState) {
+		case 0:
+			environementC.score -= 1;
+			environementC.performanceScore -= 1;
+			break;
+		case 1:
+			environementC.score -=  1;
+			environementC.performanceScore -= 1;
+			break;
+		case 2:
 			environementC.nbJewel++;
 			environementC.rooms [vaccumC.position].state = 0;
 			environementC.score +=  actionScore;
 			environementC.performanceScore += actionScore;
 			Destroy (environementC.roomJewel [vaccumC.position]);
-		}
-		if (roomState == 3) {
+			break;
+		case 3:
 			environementC.nbJewel++;
 			environementC.rooms [vaccumC.position].state = 1;
 			environementC.score += actionScore;
 			environementC.performanceScore += actionScore;
 			Destroy (environementC.roomJewel [vaccumC.position]);
+			break;
 		}
 	}
 }
