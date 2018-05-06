@@ -1884,7 +1884,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "Vincent Leclerc\nKonan-Marcelin Kouam\xE9"
+  m_Text: Vincent Leclerc
 --- !u!222 &1392001409
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2061,7 +2061,7 @@ MonoBehaviour:
   nextX: 2.33
   nextY: 1.47
   nbActionExecuted: 1
-  performanceCheckFrequence: 10
+  performanceCheckFrequence: 15
   nbMesures: 6
   nbScores: 4
   actionScores: 
@@ -2577,7 +2577,7 @@ MonoBehaviour:
   jewel: {fileID: 1775711162331220, guid: a8993683ed16b4fefa016bfb58098d18, type: 2}
   roomDust: []
   roomJewel: []
-  timeDelay: 0.01
+  timeDelay: 0.1
 --- !u!114 &1610557663
 MonoBehaviour:
   m_ObjectHideFlags: 0
