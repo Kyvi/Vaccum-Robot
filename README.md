@@ -12,7 +12,7 @@ Pour lancer la simulation, il suffit de télécharger le projet et de lancer les
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Developed on Unity, Vaccum Robot is a project done for AI class, using BDI system (beliefs, desires, intents) with 
+Developed on Unity, Vaccum Robot is a project done for AI course, using BDI system (beliefs, desires, intents) with 
 Breadth-First search algorithm.
 
 It's a simulation of a vacuum cleaner, represented by a red rectangle, which goal is to vacuum as many dirt and take as many jewels
